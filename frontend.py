@@ -25,7 +25,7 @@ def load_model():
 model = load_model()
 
 # Class labels (based on your training)
-class_labels = ['HCM', 'DCM', 'MINF', 'ARV']
+class_labels = ['HCM (Hypertrophic Cardiomyopathy) ', 'DCM (Dilated Cardiomyopathy)', 'MINF(Myocardial Infarction)', 'ARV (Abnormal Right Ventricle)','NOR (Normal)']
 
 # Function to preprocess the image
 def preprocess_image(image):
