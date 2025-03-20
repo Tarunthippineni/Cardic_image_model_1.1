@@ -1,0 +1,3 @@
+## 🔗 Model Download
+The trained `.keras` model file can be downloaded from [Google Drive](https://drive.google.com/uc?export=download&id=1-7sx0Z5QhIxxCIKi2DMvPtgXH-iCuEHT).
+
