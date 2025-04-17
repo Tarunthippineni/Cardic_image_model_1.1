@@ -3,3 +3,9 @@ streamlit
 gdown
 opencv-python-headless
 numpy
+# Heart Disease Prediction from MRI Images
+## Installation
+1. Clone the repository: `git clone <your-repo-url>`
+2. Navigate to the project directory: `cd <project-directory>`
+3. Install dependencies: `pip install -r requirements.txt`
+4. Run the app: `streamlit run streamlit_cardiac_classifier.py`
