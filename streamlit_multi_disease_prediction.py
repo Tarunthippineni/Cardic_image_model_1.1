@@ -17,7 +17,7 @@ def load_model():
         url = 'https://drive.google.com/uc?export=download&id=1SbUc4mGPiuLo59DH50MVc6Ju18GiOpPF'  # Your Google Drive file link
         output = 'model_roi_net_epoch050.h5'
     elif selected == '🧠 Brain Disease Prediction':
-        url = 'https://drive.usercontent.google.com/download?id=1WVkjuSSXYCg8VZppR1s6lPm35tbMvbLI&export=download&authuser=0'
+        url = 'https://drive.google.com/uc?export=download&id=1WVkjuSSXYCg8VZppR1s6lPm35tbMvbLI'
         output = 'inceptionv3_binary_model.keras'
 
     gdown.download(url, output, quiet=False)
