@@ -1,4 +1,4 @@
 ## 🔗 Model Download
-The trained `inceptionv3_binary_model.keras` model file can be downloaded from [https://drive.usercontent.google.com/download?id=1WVkjuSSXYCg8VZppR1s6lPm35tbMvbLI&export=download&authuser=0].
-The trained `'model_roi_net_epoch050.h5' model file can be downloaded from['https://drive.google.com/uc?export=download&id=1SbUc4mGPiuLo59DH50MVc6Ju18GiOpPF']  # Your Google Drive file link
+The trained `inceptionv3_binary_model.keras` model file can be downloaded from https://drive.usercontent.google.com/download?id=1WVkjuSSXYCg8VZppR1s6lPm35tbMvbLI&export=download&authuser=0 
+The trained `'model_roi_net_epoch050.h5' model file can be downloaded from https://drive.google.com/uc?export=download&id=1WVkjuSSXYCg8VZppR1s6lPm35tbMvbLI # Your Google Drive file link
        
