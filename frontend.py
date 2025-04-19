@@ -66,7 +66,11 @@ def preprocess_image(image, target_size, channels=3):
 def predict(image, model, class_labels, target_size, channels=3):
     preprocessed_image = preprocess_image(image, target_size, channels=channels)
     prediction = model.predict(preprocessed_image)
-    predicted_class = np.argmax(prediction, axis=1)[0]
+    print("Prediction shape:", prediction.shape)  # Debug output shape
+    # Ensure prediction is 2D (batch_size, num_classes)
+    if len(prediction.shape) > 2:
+        prediction = prediction.reshape(prediction.shape[0], -1)
+    predicted_class = np.argmax(prediction, axis=1)[0]  # Extract scalar
     confidence = prediction[0][predicted_class] * 100
     return class_labels[predicted_class], confidence
 
@@ -83,7 +87,7 @@ if selected == '❤️ Heart Disease Prediction':
         "Heart Failure with Infarction",
         "Heart Failure without Infarction"
     ]
-    target_size = (224, 224)  # Updated to match model input
+    target_size = (224, 224)  # Matches model input
     channels = 1  # Grayscale input
 
 elif selected == '🧠 Brain Disease Prediction':
