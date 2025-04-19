@@ -50,14 +50,27 @@ def preprocess_image(image, target_size, channels=3):
     image = cv2.resize(image, target_size)
     # Convert to grayscale if 1 channel is required
     if channels == 1:
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        # Add channel dimension for grayscale
+        if len(image.shape) == 3:  # Input is BGR/RGB
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        elif len(image.shape) == 2:  # Input is already grayscale
+            pass
+        else:
+            raise ValueError("Unexpected image shape: {}".format(image.shape))
+        # Ensure single channel dimension
         image = np.expand_dims(image, axis=-1)
     # Convert to RGB if 3 channels are required
-    elif channels == 3 and image.shape[-1] != 3:
-        image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+    elif channels == 3:
+        if len(image.shape) == 2:  # Input is grayscale
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+        elif image.shape[-1] != 3:  # Ensure 3 channels
+            raise ValueError("Expected 3 channels for RGB, got {}".format(image.shape[-1]))
     # Normalize to [0, 1]
     image = image / 255.0
+    # Check for invalid values
+    if np.any(np.isnan(image)) or np.any(np.isinf(image)):
+        raise ValueError("Preprocessed image contains NaN or infinite values")
+    # Convert to float32
+    image = image.astype(np.float32)
     # Add batch dimension
     image = np.expand_dims(image, axis=0)
     return image
@@ -65,6 +78,8 @@ def preprocess_image(image, target_size, channels=3):
 # Prediction function
 def predict(image, model, class_labels, target_size, channels=3):
     preprocessed_image = preprocess_image(image, target_size, channels=channels)
+    print("Preprocessed image shape:", preprocessed_image.shape)
+    print("Preprocessed image dtype:", preprocessed_image.dtype)
     prediction = model.predict(preprocessed_image)
     print("Prediction shape:", prediction.shape)
     # Handle segmentation output (e.g., (1, 224, 224, num_classes))
@@ -88,7 +103,8 @@ if selected == '❤️ Heart Disease Prediction':
         "Healthy",
         "Hypertrophy",
         "Heart Failure with Infarction",
-        "Heart Failure without Infarction"
+        "Heart Failure without Infarction",
+        "Unknown"  # Placeholder for potential 5th class
     ]
     target_size = (224, 224)  # Matches model input
     channels = 1  # Grayscale input
