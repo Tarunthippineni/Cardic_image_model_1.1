@@ -44,12 +44,17 @@ def load_model():
     })
     return model
 
-# Preprocessing function with dynamic target size
-def preprocess_image(image, target_size):
+# Preprocessing function with dynamic target size and channels
+def preprocess_image(image, target_size, channels=3):
     # Resize to target size based on the model
     image = cv2.resize(image, target_size)
-    # Convert to RGB if needed
-    if image.shape[-1] != 3:
+    # Convert to grayscale if 1 channel is required
+    if channels == 1:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # Add channel dimension for grayscale
+        image = np.expand_dims(image, axis=-1)
+    # Convert to RGB if 3 channels are required
+    elif channels == 3 and image.shape[-1] != 3:
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
     # Normalize to [0, 1]
     image = image / 255.0
@@ -58,8 +63,8 @@ def preprocess_image(image, target_size):
     return image
 
 # Prediction function
-def predict(image, model, class_labels, target_size):
-    preprocessed_image = preprocess_image(image, target_size)
+def predict(image, model, class_labels, target_size, channels=3):
+    preprocessed_image = preprocess_image(image, target_size, channels=channels)
     prediction = model.predict(preprocessed_image)
     predicted_class = np.argmax(prediction, axis=1)[0]
     confidence = prediction[0][predicted_class] * 100
@@ -68,7 +73,7 @@ def predict(image, model, class_labels, target_size):
 # Load the model once
 model = load_model()
 
-# Define target sizes and class labels for each model
+# Define target sizes, channels, and class labels for each model
 if selected == '❤️ Heart Disease Prediction':
     st.title("Heart Disease Prediction from MRI Images")
     uploaded_file = st.file_uploader("Upload an MRI image (PNG/JPG)", type=["png", "jpg", "jpeg"])
@@ -78,13 +83,15 @@ if selected == '❤️ Heart Disease Prediction':
         "Heart Failure with Infarction",
         "Heart Failure without Infarction"
     ]
-    target_size = (256, 256)  # Adjust this if needed
+    target_size = (224, 224)  # Updated to match model input
+    channels = 1  # Grayscale input
 
 elif selected == '🧠 Brain Disease Prediction':
     st.title("Brain Tumor Prediction from MRI Images")
     uploaded_file = st.file_uploader("Upload a brain MRI image (PNG/JPG)", type=["png", "jpg", "jpeg"])
     class_labels = ['glioma', 'meningioma', 'no_tumor', 'pituitary_tumor']
     target_size = (299, 299)  # Matches InceptionV3 input size
+    channels = 3  # RGB input
 
 # Process uploaded image
 if uploaded_file is not None:
@@ -100,7 +107,7 @@ if uploaded_file is not None:
     
     # Predict
     with st.spinner("Predicting..."):
-        predicted_class, confidence = predict(image, model, class_labels, target_size)
+        predicted_class, confidence = predict(image, model, class_labels, target_size, channels=channels)
     
     # Display the result
     st.success(f"**Prediction:** {predicted_class} \n**Confidence:** {confidence:.2f}%")
@@ -109,4 +116,4 @@ else:
 
 # Footer
 st.markdown("---")
-st.write("Built with using Streamlit and TensorFlow")
+st.write("Built with ❤ by Prendu using Streamlit and TensorFlow")
