@@ -6,7 +6,7 @@ from streamlit_option_menu import option_menu
 import gdown
 
 # Define custom loss function (placeholder - replace with actual implementation)
-@tf.keras.saving.register_keras_serializable()
+@tf.keras.utils.register_keras_serializable()
 def weighted_combined_loss(y_true, y_pred):
     # Placeholder implementation: Replace with the actual loss function used during training
     # Example: Combining categorical cross-entropy with a weighted component
