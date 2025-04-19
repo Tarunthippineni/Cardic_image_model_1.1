@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 from streamlit_option_menu import option_menu
 import gdown
+from scipy import stats
 
 # Define custom loss function (placeholder - replace with actual implementation)
 @tf.keras.utils.register_keras_serializable()
@@ -66,6 +67,8 @@ def preprocess_image(image, target_size, channels=3):
             raise ValueError("Expected 3 channels for RGB, got {}".format(image.shape[-1]))
     # Normalize to [0, 1]
     image = image / 255.0
+    # Debug: Print min/max values
+    print("Preprocessed image min:", np.min(image), "max:", np.max(image))
     # Check for invalid values
     if np.any(np.isnan(image)) or np.any(np.isinf(image)):
         raise ValueError("Preprocessed image contains NaN or infinite values")
@@ -82,14 +85,19 @@ def predict(image, model, class_labels, target_size, channels=3):
     print("Preprocessed image dtype:", preprocessed_image.dtype)
     prediction = model.predict(preprocessed_image)
     print("Prediction shape:", prediction.shape)
+    print("Raw prediction (first pixel):", prediction[0, 0, 0, :])
     # Handle segmentation output (e.g., (1, 224, 224, num_classes))
     if len(prediction.shape) == 4:
-        # Average over spatial dimensions (height, width)
-        prediction = np.mean(prediction, axis=(1, 2))
-        print("Aggregated prediction shape:", prediction.shape)
-    predicted_class = np.argmax(prediction, axis=1)[0]
+        # Alternative: Take the mode of per-pixel class predictions
+        per_pixel_classes = np.argmax(prediction, axis=-1)  # Shape: (1, 224, 224)
+        predicted_class = stats.mode(per_pixel_classes.flatten())[0][0]
+        print("Per-pixel class mode:", predicted_class)
+        # Compute confidence as the proportion of pixels with the predicted class
+        confidence = np.mean(per_pixel_classes == predicted_class) * 100
+    else:
+        predicted_class = np.argmax(prediction, axis=1)[0]
+        confidence = prediction[0][predicted_class] * 100
     print("Predicted class index:", predicted_class)
-    confidence = prediction[0][predicted_class] * 100
     return class_labels[predicted_class], confidence
 
 # Load the model once
