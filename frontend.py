@@ -6,6 +6,7 @@ from streamlit_option_menu import option_menu
 import gdown
 from scipy import stats
 
+
 # Define custom loss function (placeholder - replace with actual implementation)
 @tf.keras.utils.register_keras_serializable()
 def weighted_combined_loss(y_true, y_pred):
@@ -13,6 +14,7 @@ def weighted_combined_loss(y_true, y_pred):
     categorical_loss = tf.keras.losses.sparse_categorical_crossentropy(y_true, y_pred)
     # Add other loss components or weights as needed
     return categorical_loss
+
 
 # Define custom metric function
 @tf.keras.utils.register_keras_serializable()
@@ -22,17 +24,19 @@ def dice_coefficient(y_true, y_pred, smooth=1):
     intersection = tf.keras.backend.sum(y_true_f * y_pred_f)
     return (2. * intersection + smooth) / (tf.keras.backend.sum(y_true_f) + tf.keras.backend.sum(y_pred_f) + smooth)
 
+
 # Menu for selecting prediction type
 selected = option_menu("Multiple Disease Prediction System",
                        ["❤️ Heart Disease Prediction",
                         "🧠 Brain Disease Prediction"],
                        default_index=0)
 
+
 @st.cache_resource
 def load_model():
     if selected == '❤️ Heart Disease Prediction':
-        url = 'https://drive.google.com/uc?export=download&id=1KsC6QCRQYVYYh6z5YC3Pn8UDRgHe147J'
-        output = 'best_model (1).keras'
+        url = 'https://drive.google.com/uc?export=download&id=11u17qmmYUYyaAvAyVt7wn6WA4_HHVjd6'
+        output = 'model.keras'
     elif selected == '🧠 Brain Disease Prediction':
         url = 'https://drive.google.com/uc?export=download&id=1WVkjuSSXYCg8VZppR1s6lPm35tbMvbLI'
         output = 'inceptionv3_binary_model.keras'
@@ -44,6 +48,7 @@ def load_model():
         'dice_coefficient': dice_coefficient
     })
     return model
+
 
 # Preprocessing function with dynamic target size and channels
 def preprocess_image(image, target_size, channels=3):
@@ -81,6 +86,7 @@ def preprocess_image(image, target_size, channels=3):
     image = np.expand_dims(image, axis=0)
     return image
 
+
 # Prediction function
 def predict(image, model, class_labels, target_size, channels=3):
     preprocessed_image = preprocess_image(image, target_size, channels=channels)
@@ -109,6 +115,7 @@ def predict(image, model, class_labels, target_size, channels=3):
     print("Predicted class index:", predicted_class)
     return class_labels[predicted_class], confidence
 
+
 # Load the model once
 model = load_model()
 
@@ -117,11 +124,10 @@ if selected == '❤️ Heart Disease Prediction':
     st.title("Heart Disease Prediction from MRI Images")
     uploaded_file = st.file_uploader("Upload an MRI image (PNG/JPG)", type=["png", "jpg", "jpeg"])
     class_labels = [
-        "Healthy",
-        "Hypertrophy",
-        "Heart Failure with Infarction",
-        "Heart Failure without Infarction",
-        "Unknown"  # Placeholder for potential 5th class
+        "(N)Healthy",
+        "(LV HYP)Hypertrophy",
+        "(HF-1)Heart Failure with Infarction",
+        "(HF)Heart Failure without Infarction",# Placeholder for potential 5th class
     ]
     target_size = (224, 224)  # Matches model input
     channels = 1  # Grayscale input
@@ -137,18 +143,18 @@ elif selected == '🧠 Brain Disease Prediction':
 if uploaded_file is not None:
     # Read the image using OpenCV
     image = cv2.imdecode(np.frombuffer(uploaded_file.read(), np.uint8), cv2.IMREAD_COLOR)
-    
+
     if image is None:
         st.error("Error reading the image. Please upload a valid image file.")
         st.stop()
-    
+
     # Display the uploaded image
     st.image(image, caption="Uploaded MRI Image", use_container_width=True)
-    
+
     # Predict
     with st.spinner("Predicting..."):
         predicted_class, confidence = predict(image, model, class_labels, target_size, channels=channels)
-    
+
     # Display the result
     st.success(f"**Prediction:** {predicted_class} \n**Confidence:** {confidence:.2f}%")
 else:
