@@ -9,10 +9,17 @@ import gdown
 @tf.keras.utils.register_keras_serializable()
 def weighted_combined_loss(y_true, y_pred):
     # Placeholder implementation: Replace with the actual loss function used during training
-    # Example: Combining categorical cross-entropy with a weighted component
     categorical_loss = tf.keras.losses.sparse_categorical_crossentropy(y_true, y_pred)
     # Add other loss components or weights as needed
     return categorical_loss
+
+# Define custom metric function
+@tf.keras.utils.register_keras_serializable()
+def dice_coefficient(y_true, y_pred, smooth=1):
+    y_true_f = tf.keras.backend.flatten(y_true)
+    y_pred_f = tf.keras.backend.flatten(y_pred)
+    intersection = tf.keras.backend.sum(y_true_f * y_pred_f)
+    return (2. * intersection + smooth) / (tf.keras.backend.sum(y_true_f) + tf.keras.backend.sum(y_pred_f) + smooth)
 
 # Menu for selecting prediction type
 selected = option_menu("Multiple Disease Prediction System",
@@ -30,8 +37,11 @@ def load_model():
         output = 'inceptionv3_binary_model.keras'
 
     gdown.download(url, output, quiet=False)
-    # Include custom loss function in custom_objects
-    model = tf.keras.models.load_model(output, custom_objects={'weighted_combined_loss': weighted_combined_loss})
+    # Include custom loss and metric in custom_objects
+    model = tf.keras.models.load_model(output, custom_objects={
+        'weighted_combined_loss': weighted_combined_loss,
+        'dice_coefficient': dice_coefficient
+    })
     return model
 
 # Preprocessing function with dynamic target size
@@ -99,4 +109,4 @@ else:
 
 # Footer
 st.markdown("---")
-st.write("Built with ❤ by Prendu using Streamlit and TensorFlow")
+st.write("Built with using Streamlit and TensorFlow")
