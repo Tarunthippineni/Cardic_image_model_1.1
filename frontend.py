@@ -66,11 +66,14 @@ def preprocess_image(image, target_size, channels=3):
 def predict(image, model, class_labels, target_size, channels=3):
     preprocessed_image = preprocess_image(image, target_size, channels=channels)
     prediction = model.predict(preprocessed_image)
-    print("Prediction shape:", prediction.shape)  # Debug output shape
-    # Ensure prediction is 2D (batch_size, num_classes)
-    if len(prediction.shape) > 2:
-        prediction = prediction.reshape(prediction.shape[0], -1)
-    predicted_class = np.argmax(prediction, axis=1)[0]  # Extract scalar
+    print("Prediction shape:", prediction.shape)
+    # Handle segmentation output (e.g., (1, 224, 224, num_classes))
+    if len(prediction.shape) == 4:
+        # Average over spatial dimensions (height, width)
+        prediction = np.mean(prediction, axis=(1, 2))
+        print("Aggregated prediction shape:", prediction.shape)
+    predicted_class = np.argmax(prediction, axis=1)[0]
+    print("Predicted class index:", predicted_class)
     confidence = prediction[0][predicted_class] * 100
     return class_labels[predicted_class], confidence
 
