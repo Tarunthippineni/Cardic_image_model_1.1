@@ -1,9 +1,18 @@
 import streamlit as st
 import tensorflow as tf
 import cv2
-import numpy as nppi
+import numpy as np
 from streamlit_option_menu import option_menu
 import gdown
+
+# Define custom loss function (placeholder - replace with actual implementation)
+@tf.keras.saving.register_keras_serializable()
+def weighted_combined_loss(y_true, y_pred):
+    # Placeholder implementation: Replace with the actual loss function used during training
+    # Example: Combining categorical cross-entropy with a weighted component
+    categorical_loss = tf.keras.losses.sparse_categorical_crossentropy(y_true, y_pred)
+    # Add other loss components or weights as needed
+    return categorical_loss
 
 # Menu for selecting prediction type
 selected = option_menu("Multiple Disease Prediction System",
@@ -14,14 +23,15 @@ selected = option_menu("Multiple Disease Prediction System",
 @st.cache_resource
 def load_model():
     if selected == '❤️ Heart Disease Prediction':
-        url = 'https://drive.google.com/uc?export=download&id=1KsC6QCRQYVYYh6z5YC3Pn8UDRgHe147J'  # Your Google Drive file link
+        url = 'https://drive.google.com/uc?export=download&id=1KsC6QCRQYVYYh6z5YC3Pn8UDRgHe147J'
         output = 'best_model (1).keras'
     elif selected == '🧠 Brain Disease Prediction':
         url = 'https://drive.google.com/uc?export=download&id=1WVkjuSSXYCg8VZppR1s6lPm35tbMvbLI'
         output = 'inceptionv3_binary_model.keras'
 
     gdown.download(url, output, quiet=False)
-    model = tf.keras.models.load_model(output)
+    # Include custom loss function in custom_objects
+    model = tf.keras.models.load_model(output, custom_objects={'weighted_combined_loss': weighted_combined_loss})
     return model
 
 # Preprocessing function with dynamic target size
@@ -60,11 +70,10 @@ if selected == '❤️ Heart Disease Prediction':
     ]
     target_size = (256, 256)  # Adjust this if needed
 
-
 elif selected == '🧠 Brain Disease Prediction':
     st.title("Brain Tumor Prediction from MRI Images")
     uploaded_file = st.file_uploader("Upload a brain MRI image (PNG/JPG)", type=["png", "jpg", "jpeg"])
-    class_labels = ['glioma', 'meningioma', 'no_tumor', 'pituitary_tumor']  # Match notebook's class_indices
+    class_labels = ['glioma', 'meningioma', 'no_tumor', 'pituitary_tumor']
     target_size = (299, 299)  # Matches InceptionV3 input size
 
 # Process uploaded image
