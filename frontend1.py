@@ -1,3 +1,4 @@
+
 import streamlit as st
 import gdown
 import os
@@ -9,10 +10,14 @@ from keras.saving import register_keras_serializable
 # Define custom loss function
 @register_keras_serializable()
 def weighted_combined_loss(y_true, y_pred):
-    # Placeholder implementation; replace with actual loss function
-    # Example: Weighted binary cross-entropy (adjust weights/logic as needed)
+    """
+    Placeholder for weighted_combined_loss. Replace with the actual implementation.
+    This function should compute the loss used during model training.
+    Example: A combination of binary cross-entropy and another loss with weights.
+    """
+    # Placeholder: Using binary cross-entropy as a default
     binary_loss = tf.keras.losses.binary_crossentropy(y_true, y_pred)
-    return binary_loss  # Replace with your model's specific loss function
+    return binary_loss  # REPLACE with actual loss function implementation
 
 # Google Drive link for the model
 MODEL_URL = "https://drive.google.com/uc?export=download&id=1KsC6QCRQYVYYh6z5YC3Pn8UDRgHe147J"
@@ -21,11 +26,26 @@ MODEL_PATH = "best_model (1).keras"
 # Download model if not already present
 if not os.path.exists(MODEL_PATH):
     with st.spinner("Downloading model from Google Drive..."):
-        gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
+        try:
+            gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
+        except Exception as e:
+            st.error(f"Failed to download model: {str(e)}")
+            st.stop()
 
 # Load model
 with st.spinner("Loading model..."):
-    model = tf.keras.models.load_model(MODEL_PATH, custom_objects={'weighted_combined_loss': weighted_combined_loss})
+    try:
+        model = tf.keras.models.load_model(
+            MODEL_PATH,
+            custom_objects={'weighted_combined_loss': weighted_combined_loss}
+        )
+    except Exception as e:
+        st.error(f"Failed to load model: {str(e)}")
+        st.error(
+            "The model requires a custom loss function 'weighted_combined_loss'. "
+            "Please provide the correct implementation of this function."
+        )
+        st.stop()
 
 # Define label classes
 label_classes = [
