@@ -69,6 +69,9 @@ def preprocess_image(image, target_size, channels=3):
     image = image / 255.0
     # Debug: Print min/max values
     print("Preprocessed image min:", np.min(image), "max:", np.max(image))
+    # Save preprocessed image for visualization (grayscale)
+    if channels == 1:
+        cv2.imwrite("preprocessed_image.png", (image * 255).astype(np.uint8))
     # Check for invalid values
     if np.any(np.isnan(image)) or np.any(np.isinf(image)):
         raise ValueError("Preprocessed image contains NaN or infinite values")
@@ -88,9 +91,15 @@ def predict(image, model, class_labels, target_size, channels=3):
     print("Raw prediction (first pixel):", prediction[0, 0, 0, :])
     # Handle segmentation output (e.g., (1, 224, 224, num_classes))
     if len(prediction.shape) == 4:
-        # Alternative: Take the mode of per-pixel class predictions
+        # Get per-pixel class predictions
         per_pixel_classes = np.argmax(prediction, axis=-1)  # Shape: (1, 224, 224)
-        predicted_class = stats.mode(per_pixel_classes.flatten())[0][0]
+        print("Per-pixel classes shape:", per_pixel_classes.shape)
+        # Debug: Print unique classes and their counts
+        unique_classes, counts = np.unique(per_pixel_classes, return_counts=True)
+        print("Per-pixel class distribution:", dict(zip(unique_classes, counts)))
+        # Compute mode of class indices
+        mode_result = stats.mode(per_pixel_classes.flatten(), keepdims=True)
+        predicted_class = mode_result.mode.item()  # Extract scalar
         print("Per-pixel class mode:", predicted_class)
         # Compute confidence as the proportion of pixels with the predicted class
         confidence = np.mean(per_pixel_classes == predicted_class) * 100
